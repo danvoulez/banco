@@ -1,0 +1,44 @@
+name: voulez-minicontratos
+services:
+  - name: backend
+    source_dir: backend
+    run_command: uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
+    http_port: 8080
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 5
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    routes:
+      - path: /api
+    envs:
+      - key: SUPABASE_URL
+        value: https://zcsbfkatxfwafastugfq.supabase.co
+      - key: SUPABASE_SECRET_KEY
+        scope: RUN_AND_BUILD_TIME
+      - key: JWKS_URL
+        value: https://zcsbfkatxfwafastugfq.supabase.co/auth/v1/.well-known/jwks.json
+      - key: APP_NAMESPACE
+        value: minicontratos
+      - key: FRONTENDS
+        value: https://minicontratos.voulezvous.ai,https://*.ondigitalocean.app,http://localhost:5173
+
+static_sites:
+  - name: frontend
+    source_dir: frontend
+    build_command: npm ci && npm run build
+    output_dir: dist
+    routes:
+      - path: /
+    envs:
+      - key: VITE_SUPABASE_URL
+        value: https://zcsbfkatxfwafastugfq.supabase.co
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        value: sb_publishable_N4S12FBBFVV5BCp-RkJtdQ_aQRbX4kQ
+      - key: VITE_LOGLINE_BASE_URL
+        value: /api/v1
+    catchall_document: index.html
